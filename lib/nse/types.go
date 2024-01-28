@@ -1,6 +1,9 @@
 package nse
 
-import "time"
+import (
+	"encoding/json"
+	"time"
+)
 
 // Metadata represents metadata information in the JSON
 type Metadata struct {
@@ -87,16 +90,16 @@ type EquityInfo struct {
 }
 
 type EquityMetadata struct {
-	Series         string  `json:"series"`
-	Symbol         string  `json:"symbol"`
-	Isin           string  `json:"isin"`
-	Status         string  `json:"status"`
-	ListingDate    string  `json:"listingDate"`
-	Industry       string  `json:"industry"`
-	LastUpdateTime string  `json:"lastUpdateTime"`
-	PdSectorPe     float64 `json:"pdSectorPe"`
-	PdSymbolPe     float64 `json:"pdSymbolPe"`
-	PdSectorInd    string  `json:"pdSectorInd"`
+	Series         string          `json:"series"`
+	Symbol         string          `json:"symbol"`
+	Isin           string          `json:"isin"`
+	Status         string          `json:"status"`
+	ListingDate    string          `json:"listingDate"`
+	Industry       string          `json:"industry"`
+	LastUpdateTime string          `json:"lastUpdateTime"`
+	PdSectorPe     json.RawMessage `json:"pdSectorPe"`
+	PdSymbolPe     json.RawMessage `json:"pdSymbolPe"`
+	PdSectorInd    string          `json:"pdSectorInd"`
 }
 
 type EquitySecurityInfo struct {

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"net/url"
+	"os"
 	"slices"
 	"strings"
 
@@ -92,9 +93,75 @@ func QuoteEquity(symbol string) (*EquityDetails, error) {
 	if err != nil {
 		log.Fatal("Failed to fetch equity details:", err)
 	}
-
 	if response.StatusCode() == 200 {
 		var stockData EquityDetails
+		// os.WriteFile("TATATECH.json", response.Body(), 0644)
+		err := json.Unmarshal(response.Body(), &stockData)
+		if err != nil {
+			log.Println("Error decoding equity details:", err)
+			return nil, err
+		}
+		return &stockData, nil
+	}
+	return nil, errors.New("failed to fetch equity details")
+}
+
+func QuoteEquityTradeInfo(symbol string) (*EquityTradeInfo, error) {
+	cookie := getCookie()
+	response, err := client.R().EnableTrace().SetHeader("Cookie", cookie).
+		Get("/api/quote-equity?symbol=" + url.QueryEscape(strings.ToUpper(symbol)) + "&section=trade_info")
+	if err != nil {
+		log.Fatal("Failed to fetch equity details:", err)
+	}
+	if response.StatusCode() == 200 {
+		var stockData EquityTradeInfo
+		os.WriteFile("MITCON.json", response.Body(), 0644)
+		err := json.Unmarshal(response.Body(), &stockData)
+		if err != nil {
+			log.Println("Error decoding equity details:", err)
+			return nil, err
+		}
+		return &stockData, nil
+	}
+	return nil, errors.New("failed to fetch equity details")
+}
+
+func ChartDataByIndexPreopen(symbol string) (*IntradayData, error) {
+	details, _ := QuoteEquity(symbol)
+	identifier := details.Info.Identifier
+	cookie := getCookie()
+	url := "/api/chart-databyindex?index=" + url.QueryEscape(identifier) + "&preopen=true"
+	response, err := client.R().EnableTrace().SetHeader("Cookie", cookie).
+		Get(url)
+	if err != nil {
+		log.Fatal("Failed to fetch equity details:", err)
+	}
+	if response.StatusCode() == 200 {
+		var stockData IntradayData
+		os.WriteFile("MITCON.json", response.Body(), 0644)
+		err := json.Unmarshal(response.Body(), &stockData)
+		if err != nil {
+			log.Println("Error decoding equity details:", err)
+			return nil, err
+		}
+		return &stockData, nil
+	}
+	return nil, errors.New("failed to fetch equity details")
+}
+
+func ChartDataByIndex(symbol string) (*IntradayData, error) {
+	details, _ := QuoteEquity(symbol)
+	identifier := details.Info.Identifier
+	cookie := getCookie()
+	url := "/api/chart-databyindex?index=" + url.QueryEscape(identifier)
+	response, err := client.R().EnableTrace().SetHeader("Cookie", cookie).
+		Get(url)
+	if err != nil {
+		log.Fatal("Failed to fetch equity details:", err)
+	}
+	if response.StatusCode() == 200 {
+		var stockData IntradayData
+		os.WriteFile("MITCON.json", response.Body(), 0644)
 		err := json.Unmarshal(response.Body(), &stockData)
 		if err != nil {
 			log.Println("Error decoding equity details:", err)
@@ -107,7 +174,7 @@ func QuoteEquity(symbol string) (*EquityDetails, error) {
 
 // lol is a sample function for testing
 func Lol() {
-	val, err := QuoteEquity("MITCON")
+	val, err := ChartDataByIndex("MITCON")
 	if err != nil {
 		log.Println("Error in lol:", err)
 		return
