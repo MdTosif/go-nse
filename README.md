@@ -18,6 +18,8 @@ $ ./nse help
 ```
 ![image](https://github.com/MdTosif/go-nse/assets/55602482/dc13856c-b010-4787-b3fb-3cca01bf1fab)
 
+getting the details of a NSE company symbol
+
 ![image](https://github.com/MdTosif/go-nse/assets/55602482/78e066c1-2881-4857-89fc-d5f595845ffb)
 
 
