@@ -1,4 +1,4 @@
-module go-nse
+module nse
 
 go 1.21.6
 

@@ -1,0 +1,47 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+nse
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Dependency directories (remove the comment below if you want to include it)
+# vendor/
+
+# Compiled Object files, Static and Dynamic libs (Shared Objects)
+*.o
+*.a
+*.so
+
+# Default output folder for `go build`
+/bin/
+
+# Default output folder for `go install`
+/bin/
+
+# Output of the go coverage tool, specifically when used with IntelliJ
+.idea/
+
+# Output of the Visual Studio Code Go extension
+.vscode/
+
+# System and application level secrets
+*.env
+
+# Log files
+*.log
+
+# Temporary files and directories
+*.tmp
+*.swp
+*.swo
+.DS_Store
+Thumbs.db

@@ -1,10 +1,9 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"go-nse/lib/nse"
 	"log"
+	"nse/lib/nse"
 
 	"github.com/spf13/cobra"
 )
@@ -52,7 +51,7 @@ var helpCmd = &cobra.Command{
   nse quote-equity    Get Quote Equity for a symbol
 
 Flags:
-  -s, --symbol string    Specify the symbol (default "Guest")
+  -s, --symbol string    Specify the symbol
 
 Examples:
   nse symbol
@@ -66,8 +65,18 @@ var quoteEquityCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		symbol, _ := cmd.Flags().GetString(symbolFlagName)
 		data, _ := nse.QuoteEquity(symbol)
-		jsonData, _ := json.MarshalIndent(data, "", "  ")
-		fmt.Printf("%s\n", string(jsonData))
+		fmt.Printf("Company: %s (%s)\n", data.Info.CompanyName, data.Info.Symbol)
+		fmt.Printf("Industry: %s\n", data.Info.Industry)
+		fmt.Printf("Listing Date: %s\n", data.Metadata.ListingDate)
+		fmt.Printf("Last Price: ₹%.2f\n", data.PriceInfo.LastPrice)
+		fmt.Printf("Change: +%.2f (%.2f%%)\n", data.PreOpenMarket.Change, data.PriceInfo.PChange)
+		fmt.Printf("Trading Status: %s\n", data.SecurityInfo.TradingStatus)
+		fmt.Printf("Total Traded Volume: %d\n", data.PreOpenMarket.TotalTradedVolume)
+		fmt.Printf("Trading Segment: %s\n", data.SecurityInfo.TradingSegment)
+		fmt.Printf("Face Value: ₹%.2f\n", data.SecurityInfo.FaceValue)
+		fmt.Printf("Issued Size: %.2f\n", data.SecurityInfo.IssuedSize)
+		fmt.Printf("Week High: ₹%.2f\n", data.PriceInfo.WeekHighLow.Max)
+		fmt.Printf("Week Low: ₹%.2f\n", data.PriceInfo.WeekHighLow.Min)
 	},
 }
 
@@ -75,7 +84,7 @@ func init() {
 	quoteEquityCmd.Flags().StringP(symbolFlagName, symbolFlagShort, symbolFlagDefault, symbolFlagDescription)
 
 	rootCmd.AddCommand(helpCmd, symbolCmd, quoteEquityCmd)
-	nse.Lol()
+
 }
 
 func main() {

@@ -50,10 +50,3 @@ func TestQuoteEquity(t *testing.T) {
 	// log.Printf("Response: %+v\n", stockData)
 	assert.Equal(t, "MITCON", stockData.Info.Symbol)
 }
-
-func TestLol(t *testing.T) {
-
-	Lol()
-	// You can add assertions based on the expected behavior of the lol function.
-	// For example, checking logs or any other side effects.
-}

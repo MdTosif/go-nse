@@ -8,6 +8,8 @@ import (
 	"os"
 	"slices"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/go-resty/resty/v2"
 )
@@ -172,12 +174,84 @@ func ChartDataByIndex(symbol string) (*IntradayData, error) {
 	return nil, errors.New("failed to fetch equity details")
 }
 
-// lol is a sample function for testing
-func Lol() {
-	val, err := ChartDataByIndex("MITCON")
-	if err != nil {
-		log.Println("Error in lol:", err)
-		return
+func getDateRangeChunks(startDate, endDate time.Time, chunkInDays int) []DateRange {
+	var dateRanges []DateRange
+
+	for chunkStart := startDate; chunkStart.Before(endDate); chunkStart = chunkStart.AddDate(0, 0, chunkInDays) {
+		chunkEnd := chunkStart.AddDate(0, 0, chunkInDays-1)
+
+		if chunkEnd.After(endDate) {
+			chunkEnd = endDate
+		}
+
+		dateRanges = append(dateRanges, DateRange{
+			Start: chunkStart,
+			End:   chunkEnd,
+		})
 	}
-	log.Printf("%v", val)
+
+	return dateRanges
+}
+
+func EquityHytoricalData(symbol string, dateRange *DateRange) ([]EquityHistoricalData, error) {
+	details, _ := QuoteEquity(symbol)
+	activeSeries := "EQ"
+	if len(details.Info.ActiveSeries) > 0 {
+		activeSeries = details.Info.ActiveSeries[0]
+	}
+
+	if dateRange == nil {
+		listingDate := details.Metadata.ListingDate
+		start, _ := time.Parse(listingDate, listingDate)
+		end := time.Now()
+		dateRange = &DateRange{Start: start, End: end}
+	}
+	cookie := getCookie()
+	dateRanges := getDateRangeChunks(dateRange.Start, dateRange.End, 66)
+
+	var historicalData []EquityHistoricalData
+	var wg sync.WaitGroup
+	ch := make(chan EquityHistoricalData, len(dateRanges))
+	for _, v := range dateRanges {
+
+		wg.Add(1)
+		go hytoricalDataAPI(symbol, activeSeries, v, cookie, historicalData, &wg, ch)
+	}
+
+	// Close the channel when all goroutines are done
+	go func() {
+		wg.Wait()
+		close(ch)
+	}()
+
+	// Collect results from the channel
+	for stockData := range ch {
+		historicalData = append(historicalData, stockData)
+	}
+
+	if historicalData == nil {
+		return nil, errors.New("failed to fetch equity details")
+	}
+
+	return historicalData, nil
+}
+
+func hytoricalDataAPI(symbol string, activeSeries string, v DateRange, cookie string, historicalData []EquityHistoricalData, wg *sync.WaitGroup, ch chan<- EquityHistoricalData) {
+	url := "/api/historical/cm/equity?symbol=" + url.QueryEscape(strings.ToUpper(symbol)) +
+		"&series=[%22" + activeSeries + "%22]&from=" + v.Start.GoString() +
+		"&to=" + v.End.GoString()
+	log.Println(url)
+	response, err := client.R().EnableTrace().SetHeader("Cookie", cookie).
+		Get(url)
+	if err != nil {
+		log.Fatal("Failed to fetch equity details:", err)
+	}
+	if response.StatusCode() == 200 {
+		var stockData EquityHistoricalData
+		err := json.Unmarshal(response.Body(), &stockData)
+		if err != nil {
+			log.Println("Error decoding equity details:", err)
+		}
+		ch <- stockData
+	}
 }
